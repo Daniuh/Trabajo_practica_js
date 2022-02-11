@@ -40,6 +40,9 @@
         move: function(){
             this.x += (this.speed_x * this.direction);
             this.y += (this.speed_y);
+        },
+        collision: function(bar){
+            //Reacciona a la colisión con una barra que recibe como parametro
         }
     }
 }());
@@ -92,6 +95,14 @@
             draw(this.ctx,el);
             };
         },
+        check_collisions: function(){
+            for (var i = this.board.bars.length - 1; i >= 0; i--){
+                var bar = this.board.bars[i];
+                if(hit(bar, this.board.ball)){
+                    this.board.ball.collision(bar);
+                }
+            };
+        },
         play: function(){
             //para controlar las funciones, que mueven, que limpian y que dibujan 
             if(this.board.playing){
@@ -102,6 +113,30 @@
         }
     }
 
+    function hit(a,b){
+        //revisa si a colisiona con b
+        var hit = false;
+        //colisiones horizontales
+        if(b.x + b.width >= a.x && b.x < a.x + a.width)
+        {
+            //colisiones verticales
+            if(b.y + b.height >= a.y && b.y < a.y + a.height)
+                hit = true;
+        }
+        //colisión de a con b
+        if(b.x <= a.x && b.x + b.width >= a.x + a.width)
+        {
+            if(b.y <= a.y && b.y + b.height >= a.y + a.height)
+                hit = true;
+        }
+        //colisión b con a
+        if(a.x <= b.x && a.x + a.width >= b.x + b.width)
+        {
+            if(a.y <= b.y && a.y + a.height >= b.y + b.height)
+                hit = true;
+        }
+        return hit;
+    }
     function draw(ctx,element){
             switch(element.kind){
                 case "rectangle":
