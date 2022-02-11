@@ -9,17 +9,40 @@
         this.game_over = false;
         this.bars = [];
         this.ball = null;
+        this.playing = false;
     }
     //Modificiación del prototipo para colocar los metodos de la misma 
     self.Board.prototype = {
         get elements(){
             //Barras laterales del juego
-            var elements = this.bars;
+            var elements = this.bars.map(function(bar){ return bar;});
             elements.push(this.ball);
             return elements;
         }
     }
 })();
+//Creación pelota
+(function(){
+    self.Ball = function(x,y,radius,board){
+        this.x = x;
+        this.y = y;
+        this.radius = radius;
+        this.speed_y = 0;
+        this.speed_x = 3;
+        this.board = board;
+        this.direction = 1;
+
+        board.ball = this;
+        this.kind = "circle";
+        //Movimiento de la pelota
+    }
+    self.Ball.prototype = {
+        move: function(){
+            this.x += (this.speed_x * this.direction);
+            this.y += (this.speed_y);
+        }
+    }
+}());
 
 //Creación barras 
 (function(){
@@ -32,7 +55,7 @@
         //Agregar nuevo elemento
         this.board.bars.push(this);
         this.kind = "rectangle";
-        this.speed = 10;
+        this.speed = 20;
     }
     //Movimiento del objeto
     self.Bar.prototype = {
@@ -59,50 +82,84 @@
     }
 
     self.BoardView.prototype = {
+        clean: function(){
+            this.ctx.clearRect(0,0,this.board.width,this.board.height);
+        },
         draw: function(){
             for (var i = this.board.elements.length - 1; i >= 0; i--){
                  var el = this.board.elements[i];
 
             draw(this.ctx,el);
             };
+        },
+        play: function(){
+            //para controlar las funciones, que mueven, que limpian y que dibujan 
+            if(this.board.playing){
+                this.clean();
+                this.draw();
+                this.board.ball.move();
+            }
         }
     }
 
     function draw(ctx,element){
-        if(element !== null && element.hasOwnProperty("Kind")){
             switch(element.kind){
                 case "rectangle":
                     ctx.fillRect(element.x,element.y,element.width,element.height); 
                     break;
+                case "circle":
+                    ctx.beginPath();
+                    ctx.arc(element.x,element.y,element.radius,0,7);
+                    ctx.fill();
+                    ctx.closePath();
+                    break;
             }
-        }
     }
 })();
 
     var board = new Board(800,400);
-    var bar = new Bar (20,100,40,100,board);
-    var bar = new Bar (735,100,40,100,board);
+    var bar = new Bar(20,100,40,100,board);
+    var bar_2 = new Bar(735,100,40,100,board);
     var canvas = document.getElementById('canvas');
     var board_view = new BoardView(canvas,board);
+    var ball = new Ball(350, 100, 10,board);
 
 
 document.addEventListener("keydown",function(ev){
     console.log(ev.keyCode);
     if(ev.keyCode == 38){
+        ev.preventDefault();
         bar.up();
     }
     else if(ev.keyCode == 40){
+        ev.preventDefault();
         bar.down();
+    }else if(ev.keyCode === 87){
+        ev.preventDefault();
+        //w
+        bar_2.up();
+    }else if(ev.keyCode === 83){
+        ev.preventDefault();
+        //s
+        bar_2.down();
+    }else if(ev.keyCode === 32){
+        ev.preventDefault();
+        board.playing = !board.playing;
     }
-
-
 });
 
+board_view.draw();
 
-self.addEventListener("load",main);
+window.requestAnimationFrame(Controller);
+
+setTimeout(function(){
+   ball.direction = -1; 
+},4000)
+self.addEventListener("load",Controller);
 
 //Accedemos a la clase que esta dentro de la función anonima 
 //Controlador 
-function main(){
-    board_view.draw();
+function Controller(){
+    board_view.play();
+    requestAnimationFrame(Controller);
 }
