@@ -173,7 +173,7 @@
     }
 })();
 
-//Parametros que se pasan para pintar la bola, lados y raquetas.
+    //Parametros que se pasan para pintar la bola, lados y raquetas.
     var board = new Board(800,400);
     var bar = new Bar(20,100,40,100,board);
     var bar_2 = new Bar(735,100,40,100,board);
